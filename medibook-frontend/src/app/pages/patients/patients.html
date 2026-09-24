@@ -1,0 +1,351 @@
+
+<div class="patients-page">
+
+  <!-- Header -->
+  <div class="page-header">
+
+    <div class="header-left">
+      <button routerLink="/" class="back-btn">
+        ← Back to Dashboard
+      </button>
+
+      <div>
+        <h1>Patients</h1>
+        <p>Manage patient information</p>
+      </div>
+    </div>
+
+    <button
+      class="add-btn"
+      type="button"
+      (click)="openAddForm()">
+      + Add Patient
+    </button>
+
+  </div>
+
+
+  <!-- Success Message -->
+  @if (successMessage) {
+    <div class="toast success-toast">
+      <span>✓</span>
+      {{ successMessage }}
+    </div>
+  }
+
+
+  <!-- Error Message -->
+  @if (errorMessage) {
+    <div class="toast error-toast">
+      <span>!</span>
+      {{ errorMessage }}
+    </div>
+  }
+
+
+  <!-- Add / Edit Patient Form -->
+  @if (showForm) {
+
+    <div class="form-card">
+
+      <div class="form-header">
+        <h2>
+          {{ isEditMode ? 'Edit Patient' : 'Add Patient' }}
+        </h2>
+
+        <button
+          type="button"
+          class="close-btn"
+          (click)="closeForm()">
+          ✕
+        </button>
+      </div>
+
+
+      <form
+        [formGroup]="patientForm"
+        (ngSubmit)="isEditMode ? updatePatient() : onSubmit()">
+
+        <div class="form-grid">
+
+          <!-- Name -->
+          <div class="form-group">
+            <label for="name">Patient Name</label>
+
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              placeholder="Enter patient name" />
+
+            @if (
+              patientForm.get('name')?.invalid &&
+              patientForm.get('name')?.touched
+            ) {
+              <small class="error-text">
+                Name is required
+              </small>
+            }
+          </div>
+
+
+          <!-- Age -->
+          <div class="form-group">
+            <label for="age">Age</label>
+
+            <input
+              id="age"
+              type="number"
+              formControlName="age"
+              placeholder="Enter age"
+              min="1" />
+
+            @if (
+              patientForm.get('age')?.invalid &&
+              patientForm.get('age')?.touched
+            ) {
+              <small class="error-text">
+                Please enter a valid age
+              </small>
+            }
+          </div>
+
+
+          <!-- Gender -->
+          <div class="form-group">
+            <label for="gender">Gender</label>
+
+            <select
+              id="gender"
+              formControlName="gender">
+
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+
+            </select>
+
+            @if (
+              patientForm.get('gender')?.invalid &&
+              patientForm.get('gender')?.touched
+            ) {
+              <small class="error-text">
+                Gender is required
+              </small>
+            }
+          </div>
+
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+
+            <input
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              placeholder="Enter phone number" />
+
+            @if (
+              patientForm.get('phone')?.invalid &&
+              patientForm.get('phone')?.touched
+            ) {
+              <small class="error-text">
+                Phone number is required
+              </small>
+            }
+          </div>
+
+
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">Email</label>
+
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="Enter email address" />
+          </div>
+
+
+          <!-- Address -->
+          <div class="form-group full-width">
+            <label for="address">Address</label>
+
+            <textarea
+              id="address"
+              formControlName="address"
+              placeholder="Enter patient address"
+              rows="3">
+            </textarea>
+          </div>
+
+        </div>
+
+
+        <!-- Form Buttons -->
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="cancel-btn"
+            (click)="closeForm()">
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="save-btn">
+
+            {{ isEditMode ? 'Update Patient' : 'Save Patient' }}
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  }
+
+
+  <!-- Search Section -->
+  <div class="search-section">
+
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search patients by name..."
+      (input)="onSearch($event)" />
+
+  </div>
+
+
+  <!-- Patient List -->
+  <div class="table-card">
+
+    <div class="table-header">
+      <h2>Patient List</h2>
+
+      <span class="patient-count">
+        {{ filteredPatients.length }} Patients
+      </span>
+    </div>
+
+
+    <!-- Loading Message -->
+    @if (isLoading) {
+
+      <div class="message">
+        Loading patients...
+      </div>
+
+    }
+
+
+    <!-- Error Message -->
+    @else if (hasError) {
+
+      <div class="message error-message">
+        Failed to load patients. Please try again.
+      </div>
+
+    }
+
+
+    <!-- Empty List -->
+    @else if (filteredPatients.length === 0) {
+
+      <div class="message">
+        No patients found.
+      </div>
+
+    }
+
+
+    <!-- Patients Table -->
+    @else {
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Address</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+
+          <tbody>
+
+            @for (
+              patient of filteredPatients;
+              track patient.id
+            ) {
+
+              <tr>
+
+                <td>{{ patient.id }}</td>
+
+                <td class="patient-name">
+                  {{ patient.name }}
+                </td>
+
+                <td>{{ patient.age }}</td>
+
+                <td>{{ patient.gender }}</td>
+
+                <td>{{ patient.phone }}</td>
+
+                <td>
+                  {{ patient.email || '-' }}
+                </td>
+
+                <td>
+                  {{ patient.address || '-' }}
+                </td>
+
+                <td class="actions-cell">
+
+                  <button
+                    type="button"
+                    class="action-btn edit"
+                    (click)="editPatient(patient)">
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    class="action-btn delete"
+                    (click)="deletePatient(patient.id)">
+                    Delete
+                  </button>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+
+  </div>
+
+</div>

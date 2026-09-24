@@ -1,0 +1,310 @@
+
+<div class="doctors-page">
+
+  <!-- Success Toast -->
+  @if (successMessage) {
+    <div class="toast success-toast">
+      <span>✓</span>
+      {{ successMessage }}
+    </div>
+  }
+
+  <!-- Error Toast -->
+  @if (errorMessage) {
+    <div class="toast error-toast">
+      <span>!</span>
+      {{ errorMessage }}
+    </div>
+  }
+
+  <!-- Page Header -->
+  <div class="page-header">
+
+    <div class="header-left">
+      <button routerLink="/" class="back-btn">
+        ← Back to Dashboard
+      </button>
+
+      <div>
+        <h1>Doctors</h1>
+        <p>Manage doctors and their availability</p>
+      </div>
+    </div>
+
+
+
+
+    <button
+      class="add-btn"
+      (click)="openAddForm()">
+      + Add Doctor
+    </button>
+  </div>
+
+  <!-- Add Doctor Form -->
+  @if (showForm) {
+    <div class="form-card">
+
+      <div class="form-header">
+        <h2>{{ isEditMode ? 'Edit Doctor' : 'Add Doctor' }}</h2>
+
+        <button
+          type="button"
+          class="close-btn"
+          (click)="closeForm()">
+          ✕
+        </button>
+      </div>
+<form
+  [formGroup]="doctorForm"
+  (ngSubmit)="isEditMode ? updateDoctor() : onSubmit()">
+
+        <!-- Doctor Name -->
+        <div class="form-group">
+          <label for="name">Doctor Name</label>
+
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            placeholder="Enter doctor name" />
+
+          @if (
+            doctorForm.get('name')?.invalid &&
+            doctorForm.get('name')?.touched
+          ) {
+            <small class="error-text">
+              Doctor name is required.
+            </small>
+          }
+        </div>
+
+        <!-- Specialization -->
+        <div class="form-group">
+          <label for="specialization">Specialization</label>
+
+          <select
+            id="specialization"
+            formControlName="specialization">
+
+            <option value="">Select specialization</option>
+            <option value="Cardiologist">Cardiologist</option>
+            <option value="Dermatologist">Dermatologist</option>
+            <option value="General Physician">General Physician</option>
+            <option value="Pediatrician">Pediatrician</option>
+            <option value="Neurology">Neurology</option>
+
+          </select>
+
+          @if (
+            doctorForm.get('specialization')?.invalid &&
+            doctorForm.get('specialization')?.touched
+          ) {
+            <small class="error-text">
+              Please select a specialization.
+            </small>
+          }
+        </div>
+
+        <!-- Experience -->
+        <div class="form-group">
+          <label for="experience">Experience</label>
+
+          <input
+            id="experience"
+            type="text"
+            formControlName="experience"
+            placeholder="Example: 5 years" />
+
+          @if (
+            doctorForm.get('experience')?.invalid &&
+            doctorForm.get('experience')?.touched
+          ) {
+            <small class="error-text">
+              Experience is required.
+            </small>
+          }
+        </div>
+
+        <!-- Availability -->
+        <div class="form-group checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              formControlName="isAvailable" />
+
+            Available
+          </label>
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="cancel-btn"
+            (click)="closeForm()">
+            Cancel
+          </button>
+
+          <button
+  type="submit"
+  class="save-btn">
+  {{ isEditMode ? 'Update Doctor' : 'Save Doctor' }}
+</button>
+
+        </div>
+
+      </form>
+    </div>
+  }
+
+  <!-- Search Section -->
+  <!-- Search Section -->
+<div class="search-section">
+
+  <input
+    type="text"
+    placeholder="Search doctors..."
+    (input)="onSearch($event)" />
+
+  <select
+    (change)="onSpecializationChange($event)">
+
+    <option value="">
+      All Specializations
+    </option>
+
+    <option value="Cardiologist">
+      Cardiologist
+    </option>
+
+    <option value="Dermatologist">
+      Dermatologist
+    </option>
+
+    <option value="General Physician">
+      General Physician
+    </option>
+
+    <option value="Pediatrician">
+      Pediatrician
+    </option>
+
+    <option value="Neurology">
+      Neurology
+    </option>
+
+  </select>
+
+</div>
+
+  <!-- Doctors Card -->
+  <div class="doctors-card">
+
+    <h2>Doctor List</h2>
+
+    <!-- Loading -->
+    @if (isLoading) {
+      <div class="message">
+        Loading doctors...
+      </div>
+    }
+
+    <!-- Error -->
+    @else if (hasError) {
+      <div class="message error-message">
+        Unable to load doctors. Please try again.
+      </div>
+    }
+
+    <!-- Empty -->
+    @else if (filteredDoctors.length === 0) {
+            <div class="message">
+        No doctors found.
+      </div>
+          }
+
+    <!-- Table -->
+    @else {
+
+      <div class="table-container">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Doctor Name</th>
+              <th>Specialization</th>
+              <th>Experience</th>
+              <th>Availability</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            @for (doctor of filteredDoctors; track doctor.id) {
+
+              <tr>
+
+                <td>
+                  {{ doctor.name }}
+                </td>
+
+                <td>
+                  {{ doctor.specialization }}
+                </td>
+
+                <td>
+                  {{ doctor.experience }}
+                </td>
+
+                <td>
+
+                  @if (doctor.isAvailable) {
+                    <span class="status available">
+                      Available
+                    </span>
+                  } @else {
+                    <span class="status unavailable">
+                      Unavailable
+                    </span>
+                  }
+
+                </td>
+
+                <!-- Actions -->
+                <td>
+
+                  <button
+  class="action-btn edit"
+  type="button"
+  (click)="editDoctor(doctor)">
+  Edit
+</button>
+
+                  <button
+                    class="action-btn delete"
+                    type="button"
+                    (click)="deleteDoctor(doctor.id)">
+                    Delete
+                  </button>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+
+  </div>
+
+</div>

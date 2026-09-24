@@ -1,0 +1,441 @@
+
+<div class="appointments-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+
+    <div class="header-left">
+
+      <a routerLink="/" class="back-btn">
+        ← Back to Dashboard
+      </a>
+
+      <h1>Appointments</h1>
+
+      <p>Manage patient appointments</p>
+
+    </div>
+
+    <button
+      class="add-btn"
+      (click)="openAddForm()">
+
+      + Add Appointment
+
+    </button>
+
+  </div>
+
+
+  <!-- Success Message -->
+  <div
+    *ngIf="successMessage"
+    class="success-message">
+
+    {{ successMessage }}
+
+  </div>
+
+
+  <!-- Error Message -->
+  <div
+    *ngIf="errorMessage"
+    class="error-message">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <!-- Add / Edit Appointment Form -->
+  <div
+    *ngIf="showForm"
+    class="form-card">
+
+    <h2>
+      {{ isEditing ? 'Edit Appointment' : 'Add Appointment' }}
+    </h2>
+
+
+    <form
+      [formGroup]="appointmentForm"
+      (ngSubmit)="onSubmit()">
+
+
+      <!-- Patient -->
+      <div class="form-group">
+
+        <label for="patientId">
+          Select Patient
+        </label>
+
+        <select
+          id="patientId"
+          formControlName="patientId">
+
+          <option value="">
+            Select Patient
+          </option>
+
+          <option
+            *ngFor="let patient of patients"
+            [value]="patient.id">
+
+            {{ patient.name }}
+
+          </option>
+
+        </select>
+
+        <small
+          *ngIf="
+            appointmentForm.get('patientId')?.invalid &&
+            appointmentForm.get('patientId')?.touched
+          ">
+
+          Please select a patient.
+
+        </small>
+
+      </div>
+
+
+      <!-- Doctor -->
+      <div class="form-group">
+
+        <label for="doctorId">
+          Select Doctor
+        </label>
+
+        <select
+          id="doctorId"
+          formControlName="doctorId">
+
+          <option value="">
+            Select Doctor
+          </option>
+
+          <option
+            *ngFor="let doctor of doctors"
+            [value]="doctor.id">
+
+            {{ doctor.name }} -
+            {{ doctor.specialization }}
+
+          </option>
+
+        </select>
+
+        <small
+          *ngIf="
+            appointmentForm.get('doctorId')?.invalid &&
+            appointmentForm.get('doctorId')?.touched
+          ">
+
+          Please select a doctor.
+
+        </small>
+
+      </div>
+
+
+      <!-- Appointment Date -->
+      <div class="form-group">
+
+        <label for="appointmentDate">
+          Appointment Date
+        </label>
+
+        <input
+          id="appointmentDate"
+          type="date"
+          formControlName="appointmentDate">
+
+        <small
+          *ngIf="
+            appointmentForm.get('appointmentDate')?.invalid &&
+            appointmentForm.get('appointmentDate')?.touched
+          ">
+
+          Please select a date.
+
+        </small>
+
+      </div>
+
+
+      <!-- Appointment Time -->
+      <div class="form-group">
+
+        <label for="appointmentTime">
+          Appointment Time
+        </label>
+
+        <input
+          id="appointmentTime"
+          type="time"
+          formControlName="appointmentTime">
+
+        <small
+          *ngIf="
+            appointmentForm.get('appointmentTime')?.invalid &&
+            appointmentForm.get('appointmentTime')?.touched
+          ">
+
+          Please select a time.
+
+        </small>
+
+      </div>
+
+
+      <!-- Status -->
+      <div class="form-group">
+
+        <label for="status">
+          Status
+        </label>
+
+        <select
+          id="status"
+          formControlName="status">
+
+          <option value="Scheduled">
+            Scheduled
+          </option>
+
+          <option value="Completed">
+            Completed
+          </option>
+
+          <option value="Cancelled">
+            Cancelled
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- Reason -->
+      <div class="form-group">
+
+        <label for="reason">
+          Reason
+        </label>
+
+        <textarea
+          id="reason"
+          rows="3"
+          placeholder="Enter appointment reason"
+          formControlName="reason">
+        </textarea>
+
+        <small
+          *ngIf="
+            appointmentForm.get('reason')?.invalid &&
+            appointmentForm.get('reason')?.touched
+          ">
+
+          Please enter the reason.
+
+        </small>
+
+      </div>
+
+
+      <!-- Form Buttons -->
+      <div class="form-actions">
+
+        <button
+          type="submit"
+          class="save-btn">
+
+          {{ isEditing ? 'Update Appointment' : 'Save Appointment' }}
+
+        </button>
+
+
+        <button
+          type="button"
+          class="cancel-btn"
+          (click)="closeForm()">
+
+          Cancel
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+
+  <!-- Content Card -->
+  <div class="content-card">
+
+
+    <!-- Loading -->
+    <div
+      *ngIf="isLoading"
+      class="loading-message">
+
+      Loading appointments...
+
+    </div>
+
+
+    <!-- Error -->
+    <div
+      *ngIf="hasError"
+      class="error-message">
+
+      Failed to load appointments.
+      Please try again.
+
+    </div>
+
+
+    <!-- Empty -->
+    <div
+      *ngIf="
+        !isLoading &&
+        !hasError &&
+        appointments.length === 0
+      "
+      class="empty-message">
+
+      No appointments found.
+
+    </div>
+
+
+    <!-- Appointments Table -->
+    <div
+      *ngIf="
+        !isLoading &&
+        !hasError &&
+        appointments.length > 0
+      "
+      class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>ID</th>
+
+            <th>Patient Name</th>
+
+            <th>Doctor Name</th>
+
+            <th>Date</th>
+
+            <th>Time</th>
+
+            <th>Status</th>
+
+            <th>Reason</th>
+
+            <th>Actions</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let appointment of appointments">
+
+
+            <!-- Appointment ID -->
+            <td>
+              {{ appointment.id }}
+            </td>
+
+
+            <!-- Patient Name -->
+            <td>
+              {{ getPatientName(appointment.patientId) }}
+            </td>
+
+
+            <!-- Doctor Name -->
+            <td>
+              {{ getDoctorName(appointment.doctorId) }}
+            </td>
+
+
+            <!-- Appointment Date -->
+            <td>
+              {{ appointment.appointmentDate | date:'dd-MM-yyyy' }}
+            </td>
+
+
+            <!-- Appointment Time -->
+            <td>
+              {{ appointment.appointmentTime }}
+            </td>
+
+
+            <!-- Status -->
+            <td>
+
+              <span
+                [class.status-scheduled]="appointment.status === 'Scheduled'"
+                [class.status-completed]="appointment.status === 'Completed'"
+                [class.status-cancelled]="appointment.status === 'Cancelled'">
+
+                {{ appointment.status }}
+
+              </span>
+
+            </td>
+
+
+            <!-- Reason -->
+            <td>
+              {{ appointment.reason }}
+            </td>
+
+
+            <!-- Actions -->
+            <td class="actions-cell">
+
+              <button
+                type="button"
+                class="edit-btn"
+                (click)="editAppointment(appointment)">
+
+                Edit
+
+              </button>
+
+
+              <button
+                type="button"
+                class="delete-btn"
+                (click)="deleteAppointment(appointment.id)">
+
+                Delete
+
+              </button>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
