@@ -3,6 +3,7 @@ import { Dashboard } from './pages/dashboard/dashboard';
 import { Doctors } from './pages/doctors/doctors';
 import {  PatientsComponent } from './pages/patients/patients';
 import { Appointments } from './pages/appoinments/appoinments';
+import { Settings } from './pages/settings/settings';
 
 
 export const routes: Routes = [
@@ -22,6 +23,11 @@ export const routes: Routes = [
     {
         path:'appointments',
         component:Appointments
+    },
+    {
+        path:'settings',
+        component:Settings
+
     }
 
 ];
