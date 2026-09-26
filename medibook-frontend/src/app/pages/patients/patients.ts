@@ -2,7 +2,7 @@
 import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink , Router } from '@angular/router';
 import { Patients } from '../../service/patients';
 
 @Component({
@@ -21,6 +21,7 @@ export class PatientsComponent implements OnInit {
   private patientService = inject(Patients);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
   patients: any[] = [];
   filteredPatients: any[] = [];
@@ -55,26 +56,43 @@ export class PatientsComponent implements OnInit {
     });
   }
 
-  loadPatients(): void {
-    this.isLoading = true;
+ loadPatients(): void {
 
-    this.patientService.getPatients().subscribe({
-      next: (data) => {
-        this.patients = data;
-        this.filteredPatients = data;
+  this.isLoading = true;
+  this.hasError = false;
 
-        this.isLoading = false;
-        this.hasError = false;
-      },
+  console.log('Patients API request started');
 
-      error: (error) => {
-        console.error('Error loading patients:', error);
+  this.patientService.getPatients().subscribe({
 
-        this.isLoading = false;
-        this.hasError = true;
-      }
-    });
-  }
+    next: (data) => {
+
+      console.log('Patients API response:', data);
+
+      this.patients = data;
+      this.filteredPatients = data;
+
+      this.isLoading = false;
+      this.hasError = false;
+
+      this.cdr.detectChanges();
+
+    },
+
+    error: (error) => {
+
+      console.error('Error loading patients:', error);
+
+      this.isLoading = false;
+      this.hasError = true;
+
+      this.cdr.detectChanges();
+
+    }
+
+  });
+
+}
 
   openAddForm(): void {
     this.isEditMode = false;
@@ -119,7 +137,11 @@ export class PatientsComponent implements OnInit {
       }
     });
   }
-
+goToDashboard(): void {
+  this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+    this.router.navigate(['/']);
+  });
+}
   editPatient(patient: any): void {
     this.isEditMode = true;
     this.selectedPatientId = patient.id;

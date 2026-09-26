@@ -2,13 +2,15 @@
 
   <!-- Sidebar -->
   <aside class="sidebar">
+
     <div class="brand">
       <span class="brand-icon">✚</span>
       <span>MediBook</span>
     </div>
 
     <nav class="sidebar-nav">
-      <a href="#" class="nav-item active">
+
+      <a routerLink="/" class="nav-item active">
         <span>▦</span>
         Dashboard
       </a>
@@ -28,136 +30,277 @@
         Appointments
       </a>
 
-      <a routerLink="/settings" class="nav-item">
+      <a href="#" class="nav-item">
         <span>⚙</span>
         Settings
       </a>
+
     </nav>
 
     <div class="sidebar-footer">
+
       <span class="user-avatar">SK</span>
+
       <div>
         <strong>Sethulakshmi</strong>
         <small>Administrator</small>
       </div>
+
     </div>
+
   </aside>
+
 
   <!-- Main Content -->
   <main class="main-content">
 
     <!-- Header -->
     <header class="top-header">
+
       <div>
         <p class="page-label">OVERVIEW</p>
         <h1>Dashboard</h1>
       </div>
 
-      <div class="header-actions">
-        <span class="notification">🔔</span>
-        <span class="header-avatar">SK</span>
-      </div>
     </header>
+
 
     <!-- Welcome Section -->
     <section class="welcome-section">
+
       <div>
-        <h2>Good morning, Sethulakshmi! 👋</h2>
-        <p>Here is what's happening with your healthcare management system.</p>
+        <h2>Welcome to MediBook 👋</h2>
+
+        <p>
+          Manage doctors, patients, and appointments from your dashboard.
+        </p>
       </div>
 
-      <button class="primary-button">
+      <button
+        class="primary-button"
+        type="button"
+        (click)="goToAppointments()">
+
         + Book Appointment
+
       </button>
+
     </section>
+
+
+    <!-- Loading Message -->
+    <div
+      class="dashboard-message"
+      *ngIf="isLoading">
+
+      Loading dashboard data...
+
+    </div>
+
+
+    <!-- Error Message -->
+    <div
+      class="dashboard-message error"
+      *ngIf="hasError && !isLoading">
+
+      Unable to load some dashboard data.
+      Please check your backend connection.
+
+    </div>
+
 
     <!-- Summary Cards -->
     <section class="stats-grid">
 
+      <!-- Total Doctors -->
       <div class="stat-card">
+
         <div class="stat-icon blue">♙</div>
+
         <p>Total Doctors</p>
-        <h3>24</h3>
-        <span class="stat-note">Registered doctors</span>
+
+        <h3>{{ totalDoctors }}</h3>
+
+        <span class="stat-note">
+          Registered doctors
+        </span>
+
       </div>
 
+
+      <!-- Total Patients -->
       <div class="stat-card">
+
         <div class="stat-icon green">♙</div>
+
         <p>Total Patients</p>
-        <h3>156</h3>
-        <span class="stat-note">Registered patients</span>
+
+        <h3>{{ totalPatients }}</h3>
+
+        <span class="stat-note">
+          Registered patients
+        </span>
+
       </div>
 
+
+      <!-- Total Appointments -->
       <div class="stat-card">
+
         <div class="stat-icon purple">▣</div>
+
         <p>Appointments</p>
-        <h3>48</h3>
-        <span class="stat-note">Total appointments</span>
+
+        <h3>{{ totalAppointments }}</h3>
+
+        <span class="stat-note">
+          Total appointments
+        </span>
+
       </div>
 
+
+      <!-- Pending Appointments -->
       <div class="stat-card">
+
         <div class="stat-icon orange">◷</div>
+
         <p>Pending Requests</p>
-        <h3>12</h3>
-        <span class="stat-note">Awaiting confirmation</span>
+
+        <h3>{{ pendingAppointments }}</h3>
+
+        <span class="stat-note">
+          Scheduled appointments
+        </span>
+
       </div>
 
     </section>
 
+
     <!-- Dashboard Content -->
     <section class="dashboard-grid">
 
+
+      <!-- Upcoming Appointments -->
       <div class="content-card">
+
         <div class="card-header">
+
           <h3>Upcoming Appointments</h3>
-          <a href="#">View all</a>
+
+          <a routerLink="/appointments">
+            View all
+          </a>
+
         </div>
 
-        <div class="appointment-row">
-          <div class="doctor-avatar">DR</div>
-          <div class="appointment-info">
-            <strong>Dr. Rahul Menon</strong>
-            <span>General Physician</span>
-          </div>
-          <div class="appointment-time">
-            <strong>10:00 AM</strong>
-            <span>Today</span>
-          </div>
+
+        <!-- Empty State -->
+        <div
+          class="empty-state"
+          *ngIf="
+            upcomingAppointments.length === 0 &&
+            !isLoading
+          ">
+
+          No scheduled appointments available.
+
         </div>
 
-        <div class="appointment-row">
-          <div class="doctor-avatar">AS</div>
+
+        <!-- Appointment List -->
+        <div
+          class="appointment-row"
+          *ngFor="let appointment of upcomingAppointments">
+
+          <div class="doctor-avatar">
+
+            {{ getPatientInitials(appointment.patientName) }}
+
+          </div>
+
+
           <div class="appointment-info">
-            <strong>Dr. Anjali Sharma</strong>
-            <span>Cardiologist</span>
+
+            <strong>
+
+              {{
+                appointment.patientName ||
+                'Patient #' + appointment.patientId
+              }}
+
+            </strong>
+
+            <span>
+
+              Doctor ID: {{ appointment.doctorId }}
+
+            </span>
+
           </div>
+
+
           <div class="appointment-time">
-            <strong>11:30 AM</strong>
-            <span>Today</span>
+
+            <strong>
+
+              {{ appointment.appointmentTime }}
+
+            </strong>
+
+            <span>
+
+              {{ getAppointmentDate(appointment.appointmentDate) }}
+
+            </span>
+
           </div>
+
         </div>
 
-        <div class="appointment-row">
-          <div class="doctor-avatar">AK</div>
-          <div class="appointment-info">
-            <strong>Dr. Arun Kumar</strong>
-            <span>Dermatologist</span>
-          </div>
-          <div class="appointment-time">
-            <strong>02:00 PM</strong>
-            <span>Today</span>
-          </div>
-        </div>
       </div>
 
+
+      <!-- Quick Actions -->
       <div class="content-card">
+
         <div class="card-header">
+
           <h3>Quick Actions</h3>
+
         </div>
 
-        <button class="quick-action">+ Add New Patient</button>
-        <button class="quick-action">+ Add New Doctor</button>
-        <button class="quick-action">▣ View Appointments</button>
+
+        <button
+          type="button"
+          class="quick-action"
+          (click)="goToPatients()">
+
+          + Add New Patient
+
+        </button>
+
+
+        <button
+          type="button"
+          class="quick-action"
+          (click)="goToDoctors()">
+
+          + Add New Doctor
+
+        </button>
+
+
+        <button
+          type="button"
+          class="quick-action"
+          (click)="goToAppointments()">
+
+          ▣ View Appointments
+
+        </button>
+
       </div>
 
     </section>

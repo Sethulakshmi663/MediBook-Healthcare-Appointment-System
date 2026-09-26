@@ -350,6 +350,68 @@
   color: #374151;
 }
 
+/* Dashboard Messages */
+
+.dashboard-message {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+
+.dashboard-message.error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+
+/* Empty State */
+
+.empty-state {
+  text-align: center;
+  padding: 30px 10px;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+
+/* Improve Appointment Card */
+
+.appointment-row {
+  transition: background-color 0.2s ease;
+}
+
+.appointment-row:hover {
+  background-color: #f8fafc;
+}
+
+
+/* Mobile Appointment Layout */
+
+@media (max-width: 560px) {
+
+  .appointment-row {
+    align-items: flex-start;
+  }
+
+  .appointment-time {
+    min-width: 80px;
+  }
+
+  .appointment-info strong {
+    font-size: 12px;
+  }
+
+  .appointment-info span {
+    font-size: 10px;
+  }
+
+}
+
 /* Quick Actions */
 
 .quick-action {

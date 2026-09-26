@@ -13,7 +13,8 @@ import {
 } from '@angular/forms';
 
 import { DoctorService } from '../../service/doctor';
-import {RouterLink} from '@angular/router';
+import {RouterLink , Router} from '@angular/router';
+
 
 @Component({
   selector: 'app-doctors',
@@ -48,7 +49,8 @@ export class Doctors implements OnInit {
   constructor(
     private doctorService: DoctorService,
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -257,6 +259,12 @@ editDoctor(doctor: any): void {
     isAvailable: doctor.isAvailable
   });
 
+}
+
+goToDashboard(): void {
+  this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+    this.router.navigate(['/']);
+  });
 }
 // Update doctor
 updateDoctor(): void {
