@@ -1,108 +1,123 @@
 # MediBook – Healthcare Appointment Management System
 
-MediBook is a healthcare appointment management system developed using Angular and ASP.NET Core Web API. It helps manage doctors, patients, and healthcare appointments through a user-friendly web application.
+A full-stack web application to manage healthcare appointments digitally, built with **Angular**, **ASP.NET Core Web API** and **SQL Server**.
 
-## Technologies Used
+## Screenshots
 
-### Frontend
 
-* Angular
-* TypeScript
-* HTML5
-* CSS3
-* Reactive Forms
-* HTTP Client
+| Login | Dashboard |
+|-------|-----------|
+| ![Login](screenshots/login.png) | ![Dashboard](screenshots/dashboard.png) |
 
-### Backend
-
-* ASP.NET Core Web API
-* C#
-* Entity Framework Core
-
-### Database
-
-* Microsoft SQL Server
+| Doctors | Appointments |
+|---------|--------------|
+| ![Doctors](screenshots/doctors.png) | ![Appointments](screenshots/appointments.png) |
 
 ## Features
 
-### Doctor Management
+**Authentication & Security**
+- Patient registration and login with email and password
+- Password hashing
+- JWT token generation and validation
+- Angular HTTP Interceptor to attach the token to API requests
+- Auth Guard to protect routes
+- Logout
 
-* Add doctors
-* View doctors
-* Edit doctor details
-* Delete doctors
-* Search and filter doctors
+**Role-Based Access**
 
-### Patient Management
+| Role | Permissions |
+|------|-------------|
+| Admin | Manage doctors, patients and appointments |
+| Doctor | View assigned appointments and related patients; update appointment status |
+| Patient | View own information and appointments; book and edit own appointments |
 
-* Add patients
-* View patients
-* Edit patient details
-* Delete patients
-* Search and filter patients
+**Doctor Management:** add, view, edit and delete doctors; create doctor login accounts; manage availability.
 
-### Appointment Management
+**Patient Management:** patient registration, view and search patients, update permitted personal details.
 
-* Book appointments
-* Select patients and doctors
-* Set appointment date and time
-* Manage appointment status
-* Edit appointments
-* Delete appointments
-* View appointment details
+**Appointment Management:** book appointments by selecting doctor, date/time and reason; view and edit appointments; role-based access; doctors can update appointment status.
+
+**Dashboard & UI:** dashboard statistics, sidebar navigation, form validation and user feedback.
+
+## Tech Stack
+
+| Layer | Technologies |
+|-------|--------------|
+| Frontend | Angular, TypeScript, HTML5, CSS3, Angular Router, Reactive Forms, PrimeNG |
+| Backend | C#, ASP.NET Core Web API, REST API, JWT Authentication |
+| Database | SQL Server, Entity Framework Core |
+| Tools | Swagger, Postman, Git, GitHub |
+
+## Database
+
+SQL Server database `MediBookDb` with 4 tables:
+
+| Table | Purpose |
+|-------|---------|
+| Users | Login credentials and roles |
+| Doctors | Doctor details |
+| Patients | Patient details |
+| Appointments | Appointment details and relationships |
+
+A patient and a doctor can each have many appointments. Users links login accounts to Doctor or Patient profiles.
 
 ## Project Structure
 
-```text
-MediBook/
-├── medibook-frontend/
-└── medibook-backend/
+```
+MediBook.Api/
+├── Controllers/   (Auth, Doctors, Patients, Appointments)
+├── Models/
+├── Dtos/
+├── Data/
+├── Program.cs
+└── appsettings.json
+
+medibook-frontend/
+└── src/app/
+    ├── pages/     (login, register, dashboard, doctors, patients, appointments, settings)
+    ├── service/   (auth, interceptor, doctor, patients, appointments)
+    ├── app.routes.ts
+    └── app.config.ts
 ```
 
-## Installation and Setup
+## Getting Started
 
-### Frontend
-
-1. Navigate to the frontend folder:
-
-```bash
-cd medibook-frontend
-```
-
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-3. Start the Angular application:
-
-```bash
-ng serve
-```
-
-4. Open the application in your browser:
-
-```text
-http://localhost:4200
-```
+### Prerequisites
+- .NET SDK
+- Node.js and Angular CLI
+- SQL Server
 
 ### Backend
+```bash
+cd MediBook.Api
+# Set your connection string and JWT key in appsettings.json
+dotnet ef database update
+dotnet run
+```
+Swagger UI is available at `https://localhost:<port>/swagger`.
 
-1. Open the backend project in Visual Studio.
-2. Configure the SQL Server connection string.
-3. Apply the database migrations.
-4. Run the ASP.NET Core Web API.
-5. Use Swagger to test the API endpoints.
+### Frontend
+```bash
+cd medibook-frontend
+npm install
+ng serve
+```
+Open `http://localhost:4200`.
 
-## Project Purpose
+## API Overview
 
-This project was developed to practice full-stack web development, Angular frontend development, REST API integration, CRUD operations, and database connectivity.
+| Controller | Responsibility |
+|------------|----------------|
+| AuthController | Register and login |
+| DoctorsController | Doctor APIs |
+| PatientsController | Patient APIs |
+| AppointmentsController | Appointment APIs |
+
+## Roadmap
+- Pagination and advanced filtering
+- Deployment
+- End-to-end testing
 
 ## Author
 
-**Sethulakshmi K**
-
-MCA Graduate | Software Development
-
-GitHub: [Sethulakshmi663](https://github.com/Sethulakshmi663)
+**Sethulakshmi K** – [LinkedIn](https://linkedin.com/in/sethulakshmi663) | [GitHub](https://github.com/Sethulakshmi663)
