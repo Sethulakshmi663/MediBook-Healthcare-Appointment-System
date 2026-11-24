@@ -43,7 +43,7 @@ A full-stack web application to manage healthcare appointments digitally, built 
 
 | Layer | Technologies |
 |-------|--------------|
-| Frontend | Angular, TypeScript, HTML5, CSS3, Angular Router, Reactive Forms, PrimeNG |
+| Frontend | Angular, TypeScript, HTML5, CSS3, Angular Router, Reactive Forms, PrimeIcons |
 | Backend | C#, ASP.NET Core Web API, REST API, JWT Authentication |
 | Database | SQL Server, Entity Framework Core |
 | Tools | Swagger, Postman, Git, GitHub |
