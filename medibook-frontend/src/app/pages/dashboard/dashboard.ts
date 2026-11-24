@@ -1,8 +1,8 @@
+
 import {
   Component,
   OnInit,
-  ChangeDetectorRef,
-  inject
+  ChangeDetectorRef
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
@@ -24,12 +24,6 @@ import { Appoinments as AppointmentService } from '../../service/appoinments';
 })
 export class Dashboard implements OnInit {
 
-  private doctorService = inject(DoctorService);
-  private patientService = inject(Patients);
-  private appointmentService = inject(AppointmentService);
-  private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
-
   // Dashboard values
   totalDoctors = 0;
   totalPatients = 0;
@@ -43,236 +37,145 @@ export class Dashboard implements OnInit {
   isLoading = true;
   hasError = false;
 
+ userName = localStorage.getItem('name') || 'User';
+userRole = (localStorage.getItem('role') || '').toLowerCase();
+userInitials = this.userName.split(' ').map(word => word[0]).join('').substring(0, 2).toUpperCase();
 
-  // -----------------------------------
+  // Dependency Injection
+  constructor(
+    private doctorService: DoctorService,
+    private patientService: Patients,
+    private appointmentService: AppointmentService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
+
   // Component initialization
-  // -----------------------------------
-
   ngOnInit(): void {
-
     console.log('Dashboard started');
-
     this.loadDashboardData();
-
   }
 
-
-  // -----------------------------------
   // Load dashboard data
-  // -----------------------------------
-
   loadDashboardData(): void {
 
     this.isLoading = true;
     this.hasError = false;
 
-
-    // -----------------------------------
     // Get Doctors
-    // -----------------------------------
-
     this.doctorService.getDoctors().subscribe({
 
       next: (doctors) => {
-
         console.log('Doctors received:', doctors);
 
         this.totalDoctors = doctors.length;
 
-        console.log(
-          'Total Doctors:',
-          this.totalDoctors
-        );
+        console.log('Total Doctors:', this.totalDoctors);
 
         this.cdr.detectChanges();
-
         this.isLoading = false;
-
       },
 
       error: (error) => {
-
-        console.error(
-          'Doctors API Error:',
-          error
-        );
+        console.error('Doctors API Error:', error);
 
         this.hasError = true;
         this.isLoading = false;
 
         this.cdr.detectChanges();
-
       }
-
     });
 
-
-    // -----------------------------------
     // Get Patients
-    // -----------------------------------
-
     this.patientService.getPatients().subscribe({
 
       next: (patients) => {
-
         console.log('Patients received:', patients);
 
         this.totalPatients = patients.length;
 
-        console.log(
-          'Total Patients:',
-          this.totalPatients
-        );
+        console.log('Total Patients:', this.totalPatients);
 
         this.cdr.detectChanges();
-
         this.isLoading = false;
-
       },
 
       error: (error) => {
-
-        console.error(
-          'Patients API Error:',
-          error
-        );
+        console.error('Patients API Error:', error);
 
         this.hasError = true;
         this.isLoading = false;
 
         this.cdr.detectChanges();
-
       }
-
     });
 
-
-    // -----------------------------------
     // Get Appointments
-    // -----------------------------------
-
     this.appointmentService.getAppoinments().subscribe({
 
       next: (appointments) => {
-
-        console.log(
-          'Appointments received:',
-          appointments
-        );
-
+        console.log('Appointments received:', appointments);
 
         // Total appointments
+        this.totalAppointments = appointments.length;
 
-        this.totalAppointments =
-          appointments.length;
-
-
-        // Scheduled / pending appointments
-
-        this.pendingAppointments =
-          appointments.filter(
-            appointment =>
-              appointment.status?.toLowerCase() ===
-              'scheduled'
-          ).length;
-
+        // Pending appointments
+        this.pendingAppointments = appointments.filter(
+          appointment =>
+            appointment.status?.toLowerCase() === 'scheduled'
+        ).length;
 
         // Upcoming appointments
+        this.upcomingAppointments = appointments
+          .filter(
+            appointment =>
+              appointment.status?.toLowerCase() === 'scheduled'
+          )
+          .sort(
+            (a, b) =>
+              new Date(a.appointmentDate).getTime() -
+              new Date(b.appointmentDate).getTime()
+          )
+          .slice(0, 5);
 
-        this.upcomingAppointments =
-          appointments
-            .filter(
-              appointment =>
-                appointment.status?.toLowerCase() ===
-                'scheduled'
-            )
-            .sort(
-              (a, b) =>
-                new Date(
-                  a.appointmentDate
-                ).getTime() -
-                new Date(
-                  b.appointmentDate
-                ).getTime()
-            )
-            .slice(0, 5);
-
-
-        console.log(
-          'Total Appointments:',
-          this.totalAppointments
-        );
-
-        console.log(
-          'Pending Appointments:',
-          this.pendingAppointments
-        );
-
-        console.log(
-          'Upcoming Appointments:',
-          this.upcomingAppointments
-        );
-
+        console.log('Total Appointments:', this.totalAppointments);
+        console.log('Pending Appointments:', this.pendingAppointments);
+        console.log('Upcoming Appointments:', this.upcomingAppointments);
 
         this.cdr.detectChanges();
-
         this.isLoading = false;
-
       },
 
       error: (error) => {
-
-        console.error(
-          'Appointments API Error:',
-          error
-        );
+        console.error('Appointments API Error:', error);
 
         this.hasError = true;
         this.isLoading = false;
 
         this.cdr.detectChanges();
-
       }
-
     });
-
   }
 
-
-  // -----------------------------------
   // Format appointment date
-  // -----------------------------------
-
   getAppointmentDate(date: string): string {
 
     if (!date) {
-
       return 'Date not available';
-
     }
 
-    return new Date(date).toLocaleDateString(
-      'en-IN',
-      {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      }
-    );
-
+    return new Date(date).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
   }
 
-
-  // -----------------------------------
   // Get patient initials
-  // -----------------------------------
-
   getPatientInitials(name: string): string {
 
     if (!name) {
-
       return 'P';
-
     }
 
     return name
@@ -281,39 +184,34 @@ export class Dashboard implements OnInit {
       .join('')
       .substring(0, 2)
       .toUpperCase();
-
   }
 
-
-  // -----------------------------------
   // Navigation
-  // -----------------------------------
-
   goToDashboard(): void {
-
-    this.router.navigate(['/']);
-
+    this.router.navigate(['/dashboard']);
   }
-
 
   goToDoctors(): void {
-
     this.router.navigate(['/doctors']);
-
   }
-
 
   goToPatients(): void {
-
     this.router.navigate(['/patients']);
-
   }
 
-
   goToAppointments(): void {
-
     this.router.navigate(['/appointments']);
+  }
 
+  // Logout
+  logout(): void {
+
+    localStorage.removeItem('token');
+    localStorage.removeItem('name');
+    localStorage.removeItem('email');
+    localStorage.removeItem('role');
+
+    this.router.navigate(['/login']);
   }
 
 }

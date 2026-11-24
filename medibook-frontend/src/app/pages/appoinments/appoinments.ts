@@ -1,53 +1,34 @@
 
-import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Appoinments as AppointmentService } from '../../service/appoinments';
-
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators
-} from '@angular/forms';
-
 import { Patients } from '../../service/patients';
 import { DoctorService } from '../../service/doctor';
 
 @Component({
   selector: 'app-appointments',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterLink
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './appoinments.html',
   styleUrl: './appoinments.css'
 })
 export class Appointments implements OnInit {
-
-  private appointmentService = inject(AppointmentService);
-  private patientService = inject(Patients);
-  private doctorService = inject(DoctorService);
-  private fb = inject(FormBuilder);
-  private cdr = inject(ChangeDetectorRef);
+  constructor(private appointmentService: AppointmentService, private patientService: Patients, private doctorService: DoctorService, private fb: FormBuilder, private cdr: ChangeDetectorRef) {}
 
   appointments: any[] = [];
   patients: any[] = [];
   doctors: any[] = [];
-
   appointmentForm!: FormGroup;
-
   showForm = false;
   isEditing = false;
   selectedAppointmentId: number | null = null;
-
   isLoading = true;
   hasError = false;
-
   successMessage = '';
   errorMessage = '';
+  userRole = (localStorage.getItem('role') || '').toLowerCase();
 
   ngOnInit(): void {
     this.createForm();
@@ -65,19 +46,22 @@ export class Appointments implements OnInit {
       status: ['Scheduled', Validators.required],
       reason: ['', Validators.required]
     });
+    if (this.userRole === 'patient') {
+      this.appointmentForm.get('patientId')?.clearValidators();
+      this.appointmentForm.get('patientId')?.updateValueAndValidity();
+    }
   }
 
   loadAppointments(): void {
     this.isLoading = true;
-
     this.appointmentService.getAppoinments().subscribe({
-      next: (data) => {
+      next: data => {
         this.appointments = data;
         this.isLoading = false;
         this.hasError = false;
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: error => {
         console.error('Error loading appointments:', error);
         this.isLoading = false;
         this.hasError = true;
@@ -88,64 +72,41 @@ export class Appointments implements OnInit {
 
   loadPatients(): void {
     this.patientService.getPatients().subscribe({
-      next: (data) => {
-        this.patients = data;
-      },
-      error: (error) => {
-        console.error('Error loading patients:', error);
-      }
+      next: data => this.patients = data,
+      error: error => console.error('Error loading patients:', error)
     });
   }
 
   loadDoctors(): void {
     this.doctorService.getDoctors().subscribe({
-      next: (data) => {
-        this.doctors = data;
-      },
-      error: (error) => {
-        console.error('Error loading doctors:', error);
-      }
+      next: data => this.doctors = data,
+      error: error => console.error('Error loading doctors:', error)
     });
   }
 
-  getPatientName(patientId: number): string {
-    const patient = this.patients.find(p => p.id === patientId);
-    return patient ? patient.name : 'Unknown Patient';
+  getPatientName(id: number): string {
+    return this.patients.find(p => p.id === id)?.name || 'Unknown Patient';
   }
 
-  getDoctorName(doctorId: number): string {
-    const doctor = this.doctors.find(d => d.id === doctorId);
-    return doctor ? doctor.name : 'Unknown Doctor';
+  getDoctorName(id: number): string {
+    return this.doctors.find(d => d.id === id)?.name || 'Unknown Doctor';
   }
 
   openAddForm(): void {
     this.showForm = true;
     this.isEditing = false;
     this.selectedAppointmentId = null;
-
-    this.appointmentForm.reset({
-      patientId: '',
-      doctorId: '',
-      appointmentDate: '',
-      appointmentTime: '',
-      status: 'Scheduled',
-      reason: ''
-    });
+    this.appointmentForm.reset({ patientId: '', doctorId: '', appointmentDate: '', appointmentTime: '', status: 'Scheduled', reason: '' });
   }
 
   editAppointment(appointment: any): void {
     this.showForm = true;
     this.isEditing = true;
     this.selectedAppointmentId = appointment.id;
-
-    const formattedDate = appointment.appointmentDate
-      ? appointment.appointmentDate.substring(0, 10)
-      : '';
-
     this.appointmentForm.patchValue({
       patientId: appointment.patientId,
       doctorId: appointment.doctorId,
-      appointmentDate: formattedDate,
+      appointmentDate: appointment.appointmentDate?.substring(0, 10) || '',
       appointmentTime: appointment.appointmentTime,
       status: appointment.status,
       reason: appointment.reason
@@ -156,15 +117,7 @@ export class Appointments implements OnInit {
     this.showForm = false;
     this.isEditing = false;
     this.selectedAppointmentId = null;
-
-    this.appointmentForm.reset({
-      patientId: '',
-      doctorId: '',
-      appointmentDate: '',
-      appointmentTime: '',
-      status: 'Scheduled',
-      reason: ''
-    });
+    this.appointmentForm.reset({ patientId: '', doctorId: '', appointmentDate: '', appointmentTime: '', status: 'Scheduled', reason: '' });
   }
 
   onSubmit(): void {
@@ -173,68 +126,51 @@ export class Appointments implements OnInit {
       return;
     }
 
-    const appointmentData = this.appointmentForm.value;
+    const data = this.appointmentForm.getRawValue();
 
     if (this.isEditing && this.selectedAppointmentId !== null) {
-
-      this.appointmentService.updateAppoinment(
-        this.selectedAppointmentId,
-        appointmentData
-      ).subscribe({
+      this.appointmentService.updateAppoinment(this.selectedAppointmentId, data).subscribe({
         next: () => {
           this.successMessage = 'Appointment updated successfully!';
           this.errorMessage = '';
-
           this.closeForm();
           this.loadAppointments();
           this.showSuccessMessage();
         },
-        error: (error) => {
+        error: error => {
           console.error('Error updating appointment:', error);
           this.errorMessage = 'Failed to update appointment.';
           this.successMessage = '';
         }
       });
-
     } else {
-
-      this.appointmentService.addAppoinment(appointmentData).subscribe({
+      this.appointmentService.addAppoinment(data).subscribe({
         next: () => {
           this.successMessage = 'Appointment added successfully!';
           this.errorMessage = '';
-
           this.closeForm();
           this.loadAppointments();
           this.showSuccessMessage();
         },
-        error: (error) => {
+        error: error => {
           console.error('Error adding appointment:', error);
           this.errorMessage = 'Failed to add appointment.';
           this.successMessage = '';
         }
       });
-
     }
   }
 
   deleteAppointment(id: number): void {
-    const confirmDelete = confirm(
-      'Are you sure you want to delete this appointment?'
-    );
-
-    if (!confirmDelete) {
-      return;
-    }
-
+    if (!confirm('Are you sure you want to delete this appointment?')) return;
     this.appointmentService.deleteAppoinment(id).subscribe({
       next: () => {
         this.successMessage = 'Appointment deleted successfully!';
         this.errorMessage = '';
-
         this.loadAppointments();
         this.showSuccessMessage();
       },
-      error: (error) => {
+      error: error => {
         console.error('Error deleting appointment:', error);
         this.errorMessage = 'Failed to delete appointment.';
         this.successMessage = '';
@@ -244,7 +180,6 @@ export class Appointments implements OnInit {
 
   showSuccessMessage(): void {
     this.cdr.detectChanges();
-
     setTimeout(() => {
       this.successMessage = '';
       this.cdr.detectChanges();

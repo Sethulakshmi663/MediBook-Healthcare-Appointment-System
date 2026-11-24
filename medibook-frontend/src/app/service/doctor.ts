@@ -16,6 +16,12 @@ export class DoctorService {
   addDoctor(doctor: any) {
     return this.http.post<any>(this.apiUrl, doctor);
   }
+  createDoctorAccount(doctor: any) {
+  return this.http.post<any>(
+    `${this.apiUrl}/create-account`,
+    doctor
+  );
+}
   updateDoctor( id: number, doctor: any) {
     return this.http.put<any>(`${this.apiUrl}/${id}`, doctor);
   }

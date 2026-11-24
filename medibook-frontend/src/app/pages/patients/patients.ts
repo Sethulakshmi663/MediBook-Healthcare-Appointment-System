@@ -39,6 +39,7 @@ export class PatientsComponent implements OnInit {
   errorMessage = '';
 
   searchText = '';
+  userRole = (localStorage.getItem('role') || '').toLowerCase();
 
   ngOnInit(): void {
     this.createForm();

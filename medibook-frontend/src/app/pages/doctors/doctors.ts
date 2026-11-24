@@ -1,51 +1,33 @@
 
-import {
-  Component,
-  OnInit,
-  ChangeDetectorRef
-} from '@angular/core';
-
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-  ReactiveFormsModule
-} from '@angular/forms';
-
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink, Router } from '@angular/router';
 import { DoctorService } from '../../service/doctor';
-import {RouterLink , Router} from '@angular/router';
-
 
 @Component({
   selector: 'app-doctors',
+  standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './doctors.html',
   styleUrl: './doctors.css'
 })
 export class Doctors implements OnInit {
 
-  // Doctor list
   doctors: any[] = [];
+  filteredDoctors: any[] = [];
+  doctorForm!: FormGroup;
 
-  // Page states
   isLoading = true;
   hasError = false;
-
-  // Form
-  doctorForm!: FormGroup;
   showForm = false;
-
-  successMessage = '';
-  errorMessage = '';
-
-
   isEditMode = false;
   selectedDoctorId: number | null = null;
 
+  successMessage = '';
+  errorMessage = '';
   searchText = '';
   selectedSpecialization = '';
 
-  filteredDoctors: any[] = [];
   constructor(
     private doctorService: DoctorService,
     private cdr: ChangeDetectorRef,
@@ -58,303 +40,200 @@ export class Doctors implements OnInit {
     this.loadDoctors();
   }
 
-  // Create Reactive Form
   createForm(): void {
-
     this.doctorForm = this.fb.group({
-
       name: ['', Validators.required],
-
       specialization: ['', Validators.required],
-
       experience: ['', Validators.required],
-
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
       isAvailable: [true]
-
     });
-
   }
 
-  // Get doctors from API
   loadDoctors(): void {
-
     this.isLoading = true;
     this.hasError = false;
 
     this.doctorService.getDoctors().subscribe({
-
       next: (data) => {
-
-        console.log('API response:', data);
-
         this.doctors = data;
-        this.filteredDoctors = data;      
-
-        console.log('Total doctors:', this.doctors.length);
-
+        this.filterDoctors();
         this.isLoading = false;
-
         this.cdr.detectChanges();
-
       },
-
       error: (error) => {
-
         console.error('API error:', error);
-
         this.isLoading = false;
         this.hasError = true;
-
         this.cdr.detectChanges();
-
       }
-
     });
-
   }
 
-  // Open Add Doctor form
-  // Open Add Doctor form
-openAddForm(): void {
-
-  this.isEditMode = false;
-  this.selectedDoctorId = null;
-  this.showForm = true;
-
-  this.doctorForm.reset({
-    name: '',
-    specialization: '',
-    experience: '',
-    isAvailable: true
-  });
-
-}
-
-  // Close Add Doctor form
-  closeForm(): void {
-
-    this.showForm = false;
+  openAddForm(): void {
+    this.isEditMode = false;
+    this.selectedDoctorId = null;
+    this.showForm = true;
 
     this.doctorForm.reset({
       name: '',
       specialization: '',
       experience: '',
+      email: '',
+      password: '',
       isAvailable: true
     });
 
+    this.doctorForm.get('email')?.setValidators([Validators.required, Validators.email]);
+    this.doctorForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.doctorForm.updateValueAndValidity();
   }
 
-  // Submit form
-  
-// Submit form
-// Submit form
-onSubmit(): void {
-
-  if (this.doctorForm.invalid) {
-    this.doctorForm.markAllAsTouched();
-    return;
+  closeForm(): void {
+    this.showForm = false;
+    this.doctorForm.reset({
+      name: '',
+      specialization: '',
+      experience: '',
+      email: '',
+      password: '',
+      isAvailable: true
+    });
   }
 
-  const doctorData = this.doctorForm.value;
-
-  this.doctorService.addDoctor(doctorData).subscribe({
-
-    next: (response) => {
-
-      console.log('Doctor saved successfully:', response);
-
-      this.successMessage = 'Doctor saved successfully!';
-      this.errorMessage = '';
-
-      this.closeForm();
-      this.loadDoctors();
-
-      // Hide success toast after 3 seconds
-      setTimeout(() => {
-        this.successMessage = '';
-        this.cdr.detectChanges();
-      }, 3000);
-
-    },
-
-    error: (error) => {
-
-      console.error('Error saving doctor:', error);
-
-      this.errorMessage = 'Failed to save doctor. Please try again.';
-      this.successMessage = '';
-
-      // Hide error toast after 3 seconds
-      setTimeout(() => {
-        this.errorMessage = '';
-        this.cdr.detectChanges();
-      }, 3000);
-
+  onSubmit(): void {
+    if (this.doctorForm.invalid) {
+      this.doctorForm.markAllAsTouched();
+      return;
     }
 
-  });
+    const doctorData = this.doctorForm.value;
 
-}
-// Delete doctor
-// Delete doctor
-deleteDoctor(id: number): void {
-  const confirmDelete = confirm(
-    'Are you sure you want to delete this doctor?'
-  );
-
-  if (!confirmDelete) {
-    return;
-  }
-
-  this.doctorService.deleteDoctor(id).subscribe({
-    next: () => {
-      console.log('Doctor deleted successfully');
-
-      // Remove doctor from both arrays
-      this.doctors = this.doctors.filter(
-        doctor => doctor.id !== id
-      );
-
-      this.filteredDoctors = this.filteredDoctors.filter(
-        doctor => doctor.id !== id
-      );
-
-      this.successMessage = 'Doctor deleted successfully!';
-      this.errorMessage = '';
-
-      this.cdr.detectChanges();
-
-      setTimeout(() => {
+    this.doctorService.createDoctorAccount(doctorData).subscribe({
+      next: (response) => {
+        this.successMessage = response.message || 'Doctor account created successfully!';
+        this.errorMessage = '';
+        this.closeForm();
+        this.loadDoctors();
+        this.showSuccessMessage();
+      },
+      error: (error) => {
+        console.error('Error creating doctor account:', error);
+        this.errorMessage = error.error?.message || 'Failed to create doctor account.';
         this.successMessage = '';
         this.cdr.detectChanges();
-      }, 3000);
-    },
-
-    error: (error) => {
-      console.error('Error deleting doctor:', error);
-
-      this.errorMessage = 'Failed to delete doctor.';
-      this.successMessage = '';
-
-      this.cdr.detectChanges();
-
-      setTimeout(() => {
-        this.errorMessage = '';
-        this.cdr.detectChanges();
-      }, 3000);
-    }
-  });
-}
-// Open Edit Doctor form
-editDoctor(doctor: any): void {
-
-  this.isEditMode = true;
-  this.selectedDoctorId = doctor.id;
-  this.showForm = true;
-
-  this.doctorForm.patchValue({
-    name: doctor.name,
-    specialization: doctor.specialization,
-    experience: doctor.experience,
-    isAvailable: doctor.isAvailable
-  });
-
-}
-
-goToDashboard(): void {
-  this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-    this.router.navigate(['/']);
-  });
-}
-// Update doctor
-updateDoctor(): void {
-
-  if (
-    this.doctorForm.invalid ||
-    this.selectedDoctorId === null
-  ) {
-    this.doctorForm.markAllAsTouched();
-    return;
+        this.showErrorMessage();
+      }
+    });
   }
 
-  const doctorData = this.doctorForm.value;
+  editDoctor(doctor: any): void {
+    this.isEditMode = true;
+    this.selectedDoctorId = doctor.id;
+    this.showForm = true;
 
-  this.doctorService.updateDoctor(
-    this.selectedDoctorId,
-    doctorData
-  ).subscribe({
+    this.doctorForm.patchValue({
+      name: doctor.name,
+      specialization: doctor.specialization,
+      experience: doctor.experience,
+      email: '',
+      password: '',
+      isAvailable: doctor.isAvailable
+    });
 
-    next: () => {
+    this.doctorForm.get('email')?.clearValidators();
+    this.doctorForm.get('password')?.clearValidators();
+    this.doctorForm.get('email')?.updateValueAndValidity();
+    this.doctorForm.get('password')?.updateValueAndValidity();
+  }
 
-      this.successMessage = 'Doctor updated successfully!';
-      this.errorMessage = '';
-
-      this.closeForm();
-      this.loadDoctors();
-
-      setTimeout(() => {
-        this.successMessage = '';
-        this.cdr.detectChanges();
-      }, 3000);
-
-    },
-
-    error: (error) => {
-
-      console.error('Error updating doctor:', error);
-
-      this.errorMessage = 'Failed to update doctor.';
-      this.successMessage = '';
-
-      this.cdr.detectChanges();
-
-      setTimeout(() => {
-        this.errorMessage = '';
-        this.cdr.detectChanges();
-      }, 3000);
-
+  updateDoctor(): void {
+    if (this.doctorForm.invalid || this.selectedDoctorId === null) {
+      this.doctorForm.markAllAsTouched();
+      return;
     }
 
-  });
+    const doctorData = {
+      name: this.doctorForm.value.name,
+      specialization: this.doctorForm.value.specialization,
+      experience: this.doctorForm.value.experience,
+      isAvailable: this.doctorForm.value.isAvailable
+    };
 
+    this.doctorService.updateDoctor(this.selectedDoctorId, doctorData).subscribe({
+      next: () => {
+        this.successMessage = 'Doctor updated successfully!';
+        this.errorMessage = '';
+        this.closeForm();
+        this.loadDoctors();
+        this.showSuccessMessage();
+      },
+      error: (error) => {
+        console.error('Error updating doctor:', error);
+        this.errorMessage = 'Failed to update doctor.';
+        this.successMessage = '';
+        this.cdr.detectChanges();
+        this.showErrorMessage();
+      }
+    });
+  }
+
+  deleteDoctor(id: number): void {
+    if (!confirm('Are you sure you want to delete this doctor?')) return;
+
+    this.doctorService.deleteDoctor(id).subscribe({
+      next: () => {
+        this.doctors = this.doctors.filter(doctor => doctor.id !== id);
+        this.filterDoctors();
+        this.successMessage = 'Doctor deleted successfully!';
+        this.errorMessage = '';
+        this.cdr.detectChanges();
+        this.showSuccessMessage();
+      },
+      error: (error) => {
+        console.error('Error deleting doctor:', error);
+        this.errorMessage = 'Failed to delete doctor.';
+        this.successMessage = '';
+        this.cdr.detectChanges();
+        this.showErrorMessage();
+      }
+    });
+  }
+
+  filterDoctors(): void {
+    this.filteredDoctors = this.doctors.filter(doctor => {
+      const matchesName = doctor.name?.toLowerCase().includes(this.searchText.toLowerCase());
+      const matchesSpecialization = !this.selectedSpecialization || doctor.specialization === this.selectedSpecialization;
+      return matchesName && matchesSpecialization;
+    });
+  }
+
+  onSearch(event: Event): void {
+    this.searchText = (event.target as HTMLInputElement).value;
+    this.filterDoctors();
+  }
+
+  onSpecializationChange(event: Event): void {
+    this.selectedSpecialization = (event.target as HTMLSelectElement).value;
+    this.filterDoctors();
+  }
+
+  goToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
+  showSuccessMessage(): void {
+    setTimeout(() => {
+      this.successMessage = '';
+      this.cdr.detectChanges();
+    }, 3000);
+  }
+
+  showErrorMessage(): void {
+    setTimeout(() => {
+      this.errorMessage = '';
+      this.cdr.detectChanges();
+    }, 3000);
+  }
 }
-// Search and filter doctors
-filterDoctors(): void {
-
-  this.filteredDoctors = this.doctors.filter(doctor => {
-
-    const matchesName =
-      doctor.name
-        .toLowerCase()
-        .includes(this.searchText.toLowerCase());
-
-    const matchesSpecialization =
-      this.selectedSpecialization === '' ||
-      doctor.specialization === this.selectedSpecialization;
-
-    return matchesName && matchesSpecialization;
-
-  });
-
-}
-onSearch(event: Event): void {
-
-  const input = event.target as HTMLInputElement;
-
-  this.searchText = input.value;
-
-  this.filterDoctors();
-
-}
-
-onSpecializationChange(event: Event): void {
-
-  const select = event.target as HTMLSelectElement;
-
-  this.selectedSpecialization = select.value;
-
-  this.filterDoctors();
-
-}
-}
-

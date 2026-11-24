@@ -40,7 +40,7 @@ export class Settings {
   }
 
   goToDashboard(): void {
-    this.router.navigate(['/']);
+    this.router.navigate(['/dashboard']);
   }
 
 }

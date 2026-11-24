@@ -8,6 +8,7 @@ export class Appoinments {
   private http = inject(HttpClient);
 
  private apiUrl = 'https://localhost:7056/api/Appointments';
+ 
 
   getAppoinments() {
     return this.http.get<any[]>(this.apiUrl);

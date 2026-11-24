@@ -5,7 +5,7 @@
   <div class="page-header">
 
     <div class="header-left">
-      <button routerLink="/" class="back-btn">
+      <button routerLink="/dashboard" class="back-btn">
         ← Back to Dashboard
       </button>
 
@@ -15,12 +15,7 @@
       </div>
     </div>
 
-    <button
-      class="add-btn"
-      type="button"
-      (click)="openAddForm()">
-      + Add Patient
-    </button>
+    <button *ngIf="userRole === 'admin' || userRole === 'patient'" class="add-btn" (click)="openAddForm()">+ Add Appointment</button>
 
   </div>
 

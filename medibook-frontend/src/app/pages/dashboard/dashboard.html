@@ -1,310 +1,71 @@
+
 <div class="app-layout">
-
-  <!-- Sidebar -->
   <aside class="sidebar">
-
-    <div class="brand">
-      <span class="brand-icon">✚</span>
-      <span>MediBook</span>
-    </div>
-
+    <div class="brand"><span class="brand-icon">✚</span><span>MediBook</span></div>
     <nav class="sidebar-nav">
-
-      <a routerLink="/" class="nav-item active">
-        <span>▦</span>
-        Dashboard
-      </a>
-
-      <a routerLink="/doctors" class="nav-item">
-        <span>♙</span>
-        Doctors
-      </a>
-
-      <a routerLink="/patients" class="nav-item">
-        <span>♙</span>
-        Patients
-      </a>
-
-      <a routerLink="/appointments" class="nav-item">
-        <span>▣</span>
-        Appointments
-      </a>
-
-      <a routerLink="/settings" class="nav-item">
-        <span>⚙</span>
-        Settings
-      </a>
-
+      <a routerLink="/dashboard" class="nav-item active"><span>▦</span> Dashboard</a>
+      <a *ngIf="userRole === 'admin'" routerLink="/doctors" class="nav-item"><span>♙</span> Doctors</a>
+      <a *ngIf="userRole === 'admin' || userRole === 'doctor'" routerLink="/patients" class="nav-item"><span>♙</span> Patients</a>
+      <a routerLink="/appointments" class="nav-item"><span>▣</span> Appointments</a>
+      <a *ngIf="userRole === 'admin'" routerLink="/settings" class="nav-item"><span>⚙</span> Settings</a>
     </nav>
-
     <div class="sidebar-footer">
-
-      <span class="user-avatar">SK</span>
-
-      <div>
-        <strong>Sethulakshmi</strong>
-        <small>Administrator</small>
-      </div>
-
+      <span class="user-avatar">{{ userInitials }}</span>
+      <div><strong>{{ userName }}</strong><small>{{ userRole | titlecase }}</small></div>
     </div>
-
   </aside>
 
-
-  <!-- Main Content -->
   <main class="main-content">
-
-    <!-- Header -->
     <header class="top-header">
-
-      <div>
-        <p class="page-label">OVERVIEW</p>
-        <h1>Dashboard</h1>
-      </div>
-
+      <div><p class="page-label">OVERVIEW</p><h1>Dashboard</h1></div>
+      <button class="logout" type="button" (click)="logout()"><i class="pi pi-sign-out"></i> Logout</button>
     </header>
 
-
-    <!-- Welcome Section -->
     <section class="welcome-section">
-
-      <div>
-        <h2>Welcome to MediBook 👋</h2>
-
-        <p>
-          Manage doctors, patients, and appointments from your dashboard.
-        </p>
-      </div>
-
-      <button
-        class="primary-button"
-        type="button"
-        (click)="goToAppointments()">
-
-        + Book Appointment
-
-      </button>
-
+      <div><h2>Welcome to MediBook 👋</h2><p>Manage your healthcare activities from your dashboard.</p></div>
+      <button class="primary-button" type="button" (click)="goToAppointments()">+ Book Appointment</button>
     </section>
 
+    <div class="dashboard-message" *ngIf="isLoading">Loading dashboard data...</div>
+    <div class="dashboard-message error" *ngIf="hasError && !isLoading">Unable to load some dashboard data. Please check your backend connection.</div>
 
-    <!-- Loading Message -->
-    <div
-      class="dashboard-message"
-      *ngIf="isLoading">
-
-      Loading dashboard data...
-
-    </div>
-
-
-    <!-- Error Message -->
-    <div
-      class="dashboard-message error"
-      *ngIf="hasError && !isLoading">
-
-      Unable to load some dashboard data.
-      Please check your backend connection.
-
-    </div>
-
-
-    <!-- Summary Cards -->
     <section class="stats-grid">
+      <ng-container *ngIf="userRole === 'admin'">
+        <div class="stat-card"><div class="stat-icon blue">♙</div><p>Total Doctors</p><h3>{{ totalDoctors }}</h3><span class="stat-note">Registered doctors</span></div>
+        <div class="stat-card"><div class="stat-icon green">♙</div><p>Total Patients</p><h3>{{ totalPatients }}</h3><span class="stat-note">Registered patients</span></div>
+        <div class="stat-card"><div class="stat-icon purple">▣</div><p>Appointments</p><h3>{{ totalAppointments }}</h3><span class="stat-note">Total appointments</span></div>
+        <div class="stat-card"><div class="stat-icon orange">◷</div><p>Pending Requests</p><h3>{{ pendingAppointments }}</h3><span class="stat-note">Scheduled appointments</span></div>
+      </ng-container>
 
-      <!-- Total Doctors -->
-      <div class="stat-card">
+      <ng-container *ngIf="userRole === 'doctor'">
+        <div class="stat-card"><div class="stat-icon purple">▣</div><p>Assigned Appointments</p><h3>{{ totalAppointments }}</h3><span class="stat-note">Your appointments</span></div>
+        <div class="stat-card"><div class="stat-icon green">♙</div><p>Related Patients</p><h3>{{ totalPatients }}</h3><span class="stat-note">Your patients</span></div>
+      </ng-container>
 
-        <div class="stat-icon blue">♙</div>
-
-        <p>Total Doctors</p>
-
-        <h3>{{ totalDoctors }}</h3>
-
-        <span class="stat-note">
-          Registered doctors
-        </span>
-
-      </div>
-
-
-      <!-- Total Patients -->
-      <div class="stat-card">
-
-        <div class="stat-icon green">♙</div>
-
-        <p>Total Patients</p>
-
-        <h3>{{ totalPatients }}</h3>
-
-        <span class="stat-note">
-          Registered patients
-        </span>
-
-      </div>
-
-
-      <!-- Total Appointments -->
-      <div class="stat-card">
-
-        <div class="stat-icon purple">▣</div>
-
-        <p>Appointments</p>
-
-        <h3>{{ totalAppointments }}</h3>
-
-        <span class="stat-note">
-          Total appointments
-        </span>
-
-      </div>
-
-
-      <!-- Pending Appointments -->
-      <div class="stat-card">
-
-        <div class="stat-icon orange">◷</div>
-
-        <p>Pending Requests</p>
-
-        <h3>{{ pendingAppointments }}</h3>
-
-        <span class="stat-note">
-          Scheduled appointments
-        </span>
-
-      </div>
-
+      <ng-container *ngIf="userRole === 'patient'">
+        <div class="stat-card"><div class="stat-icon purple">▣</div><p>My Appointments</p><h3>{{ totalAppointments }}</h3><span class="stat-note">Your appointments</span></div>
+      </ng-container>
     </section>
 
-
-    <!-- Dashboard Content -->
     <section class="dashboard-grid">
-
-
-      <!-- Upcoming Appointments -->
       <div class="content-card">
-
-        <div class="card-header">
-
-          <h3>Upcoming Appointments</h3>
-
-          <a routerLink="/appointments">
-            View all
-          </a>
-
+        <div class="card-header"><h3>Upcoming Appointments</h3><a routerLink="/appointments">View all</a></div>
+        <div class="empty-state" *ngIf="upcomingAppointments.length === 0 && !isLoading">No scheduled appointments available.</div>
+        <div class="appointment-row" *ngFor="let appointment of upcomingAppointments">
+          <div class="doctor-avatar">{{ getPatientInitials(appointment.patientName) }}</div>
+          <div class="appointment-info"><strong>{{ appointment.patientName || 'Patient #' + appointment.patientId }}</strong><span>Doctor ID: {{ appointment.doctorId }}</span></div>
+          <div class="appointment-time"><strong>{{ appointment.appointmentTime }}</strong><span>{{ getAppointmentDate(appointment.appointmentDate) }}</span></div>
         </div>
-
-
-        <!-- Empty State -->
-        <div
-          class="empty-state"
-          *ngIf="
-            upcomingAppointments.length === 0 &&
-            !isLoading
-          ">
-
-          No scheduled appointments available.
-
-        </div>
-
-
-        <!-- Appointment List -->
-        <div
-          class="appointment-row"
-          *ngFor="let appointment of upcomingAppointments">
-
-          <div class="doctor-avatar">
-
-            {{ getPatientInitials(appointment.patientName) }}
-
-          </div>
-
-
-          <div class="appointment-info">
-
-            <strong>
-
-              {{
-                appointment.patientName ||
-                'Patient #' + appointment.patientId
-              }}
-
-            </strong>
-
-            <span>
-
-              Doctor ID: {{ appointment.doctorId }}
-
-            </span>
-
-          </div>
-
-
-          <div class="appointment-time">
-
-            <strong>
-
-              {{ appointment.appointmentTime }}
-
-            </strong>
-
-            <span>
-
-              {{ getAppointmentDate(appointment.appointmentDate) }}
-
-            </span>
-
-          </div>
-
-        </div>
-
       </div>
 
-
-      <!-- Quick Actions -->
       <div class="content-card">
-
-        <div class="card-header">
-
-          <h3>Quick Actions</h3>
-
-        </div>
-
-
-        <button
-          type="button"
-          class="quick-action"
-          (click)="goToPatients()">
-
-          + Add New Patient
-
-        </button>
-
-
-        <button
-          type="button"
-          class="quick-action"
-          (click)="goToDoctors()">
-
-          + Add New Doctor
-
-        </button>
-
-
-        <button
-          type="button"
-          class="quick-action"
-          (click)="goToAppointments()">
-
-          ▣ View Appointments
-
-        </button>
-
+        <div class="card-header"><h3>Quick Actions</h3></div>
+        <ng-container *ngIf="userRole === 'admin'">
+          <button type="button" class="quick-action" (click)="goToPatients()">+ Add New Patient</button>
+          <button type="button" class="quick-action" (click)="goToDoctors()">+ Add New Doctor</button>
+        </ng-container>
+        <button type="button" class="quick-action" (click)="goToAppointments()">▣ View Appointments</button>
       </div>
-
     </section>
-
   </main>
-
 </div>
