@@ -11,7 +11,7 @@ A full-stack web application to manage healthcare appointments digitally, built 
 
 | Doctors | Appointments |
 |---------|--------------|
-| ![Doctors](screenshots/doctors.png) | ![Appointments](screenshots/appointments.png) |
+| ![Doctors](screenshots/doctors.png) | ![Appointments](screenshots/appoinments.png) |
 
 ## Features
 
